@@ -1,0 +1,16 @@
+{
+  "name": "hw3_invoice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "homework_json_to_mongoose.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "mongoose": "^9.11.1"
+  }
+}
