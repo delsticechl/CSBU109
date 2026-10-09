@@ -1,0 +1,98 @@
+-- Create database
+CREATE DATABASE library_db;
+
+-- Use the database
+USE library_db;
+
+
+-- =========================================
+-- 1. AUTHORS TABLE
+-- =========================================
+
+CREATE TABLE authors (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    author_name VARCHAR(100) NOT NULL,
+    nationality VARCHAR(50)
+);
+
+
+-- =========================================
+-- 2. BOOKS TABLE
+-- =========================================
+
+CREATE TABLE books (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL,
+    author_id INT,
+    category VARCHAR(50),
+    publish_year INT,
+
+    FOREIGN KEY (author_id)
+        REFERENCES authors(id)
+);
+
+
+-- =========================================
+-- 3. BORROW RECORDS TABLE
+-- =========================================
+
+CREATE TABLE borrow_records (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    book_id INT,
+    borrower_name VARCHAR(100),
+    borrow_date DATE,
+    return_date DATE,
+
+    FOREIGN KEY (book_id)
+        REFERENCES books(id)
+);
+
+
+-- =========================================
+-- INSERT DATA INTO AUTHORS
+-- =========================================
+
+INSERT INTO authors (author_name, nationality)
+VALUES
+('J.K. Rowling', 'British'),
+('George Orwell', 'British'),
+('Haruki Murakami', 'Japanese');
+
+
+-- =========================================
+-- INSERT DATA INTO BOOKS
+-- =========================================
+
+INSERT INTO books (title, author_id, category, publish_year)
+VALUES
+('Harry Potter and the Philosopher''s Stone', 1, 'Fantasy', 1997),
+('1984', 2, 'Dystopian', 1949),
+('Norwegian Wood', 3, 'Romance', 1987);
+
+
+-- =========================================
+-- INSERT DATA INTO BORROW RECORDS
+-- =========================================
+
+INSERT INTO borrow_records
+(book_id, borrower_name, borrow_date, return_date)
+VALUES
+(1, 'Nguyen An', '2026-10-01', '2026-10-10'),
+(2, 'Tran Minh', '2026-10-02', '2026-10-12'),
+(3, 'Le Anh', '2026-10-03', NULL);
+
+
+-- =========================================
+-- JOIN ALL 3 TABLES
+-- =========================================
+
+SELECT
+    books.title AS Book_Title,
+    authors.author_name AS Author_Name,
+    borrow_records.borrower_name AS Borrower_Name,
+    borrow_records.borrow_date AS Borrow_Date
+FROM books
+JOIN authors
+    ON books.author_id = authors.id
+JOIN borrow_records
+    ON books.id = borrow_records.book_id;
