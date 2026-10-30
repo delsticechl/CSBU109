@@ -2,8 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const productRoutes = require('./routes/product.routes');
 const categoryRoutes = require('./routes/category.routes');
-const swaggerSpec = require('./config/swagger');
-const swaggerUi = require('swagger-ui-express');
+const setupSwagger = require('./config/swagger');
 const app = express();
 const PORT = 3000;
 
@@ -13,8 +12,8 @@ app.use(express.json());
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 
-// Register Swagger UI route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Mount Swagger UI at /api-docs
+setupSwagger(app);
 
 // Global error handler (must be registered AFTER routes)
 app.use((err, req, res, next) => {
