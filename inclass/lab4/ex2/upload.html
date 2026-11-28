@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Upload - Multer Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 40px 20px;
+        }
+
+        .upload-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .upload-container h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background-color: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-upload-label:hover,
+        .file-upload-label.dragover {
+            background-color: #f3f4f6;
+            border-color: #6366f1;
+        }
+
+        .file-upload-label svg {
+            width: 40px;
+            height: 40px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        #fileNameDisplay {
+            font-size: 15px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 6px;
+            word-break: break-all;
+        }
+
+        .file-hint {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .btn-upload {
+            width: 100%;
+            padding: 14px;
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-upload:hover {
+            background-color: #4f46e5;
+        }
+
+        .btn-upload:disabled {
+            background-color: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+            animation: fadeIn 0.4s ease;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-container h3 {
+            font-size: 18px;
+            color: #10b981;
+            margin-bottom: 16px;
+        }
+
+        .preview-wrapper {
+            background-color: #f3f4f6;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        #previewImage {
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .url-container {
+            background-color: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            word-break: break-all;
+        }
+
+        .url-container p {
+            font-size: 13px;
+            color: #4b5563;
+            margin: 0;
+        }
+
+        .url-container a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+
+        .url-container a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background-color: #fef2f2;
+            border: 1px solid #f87171;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        /* ---------- Gallery ---------- */
+        .gallery-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 820px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 28px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .gallery-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .gallery-count {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .gallery-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            display: block;
+            background: #f3f4f6;
+        }
+
+        .gallery-meta {
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        .gallery-name {
+            font-weight: 600;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gallery-size {
+            color: #9ca3af;
+            margin: 2px 0 8px;
+        }
+
+        .gallery-actions {
+            display: flex;
+            gap: 14px;
+        }
+
+        .gallery-actions a,
+        .gallery-actions button {
+            font-size: 12px;
+            font-family: inherit;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .gallery-actions a {
+            color: #4f46e5;
+        }
+
+        .gallery-actions button {
+            color: #dc2626;
+        }
+
+        .gallery-actions a:hover,
+        .gallery-actions button:hover {
+            text-decoration: underline;
+        }
+
+        .gallery-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+            padding: 20px 0;
+        }
+
+        #galleryError {
+            display: none;
+            margin: 0 0 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="upload-container">
+        <h2>Profile Picture</h2>
+        <p class="subtitle">Select an image to upload as your avatar.</p>
+
+        <form id="uploadForm">
+            <div class="file-upload-wrapper">
+                <label for="avatarInput" class="file-upload-label" id="dropZone">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span id="fileNameDisplay">Choose an image or drag & drop</span>
+                    <span class="file-hint">JPG, PNG, WEBP up to 2MB</span>
+                </label>
+                <input type="file" id="avatarInput" accept="image/*" required>
+            </div>
+
+            <button type="submit" class="btn-upload" id="uploadBtn">Upload Avatar</button>
+        </form>
+
+        <div id="errorBox" class="error-message"></div>
+
+        <div id="result" class="result-container">
+            <h3>Upload Successful! 🎉</h3>
+            <div class="preview-wrapper">
+                <img id="previewImage" src="" alt="Preview">
+            </div>
+            <div class="url-container">
+                <p><strong>URL:</strong> <a href="#" id="imageAddress" target="_blank"></a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery of all uploaded files -->
+    <div class="gallery-container">
+        <div class="gallery-header">
+            <h3>Uploaded Files</h3>
+            <span class="gallery-count" id="galleryCount">0 files</span>
+        </div>
+        <div id="galleryError" class="error-message"></div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001/api/v1';
+
+        const avatarInput = document.getElementById('avatarInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const dropZone = document.getElementById('dropZone');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const errorBox = document.getElementById('errorBox');
+        const resultBox = document.getElementById('result');
+        const previewImage = document.getElementById('previewImage');
+        const imageAddress = document.getElementById('imageAddress');
+        const galleryGrid = document.getElementById('galleryGrid');
+        const galleryCount = document.getElementById('galleryCount');
+        const galleryError = document.getElementById('galleryError');
+
+        // Handle file selection
+        avatarInput.addEventListener('change', function (e) {
+            updateFileName(e.target.files);
+        });
+
+        // Drag and Drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                avatarInput.files = files; // Assign files to input
+                updateFileName(files);
+            }
+        }, false);
+
+        function updateFileName(files) {
+            errorBox.style.display = 'none';
+            if (files && files.length > 0) {
+                fileNameDisplay.textContent = files[0].name;
+                fileNameDisplay.style.color = '#111827';
+                fileNameDisplay.style.fontWeight = '600';
+            } else {
+                fileNameDisplay.textContent = 'Choose an image or drag & drop';
+                fileNameDisplay.style.color = '#6b7280';
+                fileNameDisplay.style.fontWeight = '500';
+            }
+        }
+
+        // Handle Upload
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (avatarInput.files.length === 0) return;
+
+            // Reset UI state
+            errorBox.style.display = 'none';
+            resultBox.style.display = 'none';
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('avatar', avatarInput.files[0]);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload-avatar`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    previewImage.src = result.fileInfo.url;
+                    imageAddress.href = result.fileInfo.url;
+                    imageAddress.textContent = result.fileInfo.url;
+                    resultBox.style.display = 'block';
+
+                    // Reset the picker and refresh the gallery
+                    avatarInput.value = '';
+                    updateFileName(null);
+                    loadFiles();
+                } else {
+                    errorBox.textContent = 'Error: ' + result.message;
+                    errorBox.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Upload error:', err);
+                errorBox.textContent = 'An error occurred during upload. Please ensure the server is running.';
+                errorBox.style.display = 'block';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Avatar';
+            }
+        });
+
+        // ---------- Gallery ----------
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatSize(bytes) {
+            return bytes < 1024 * 1024
+                ? (bytes / 1024).toFixed(1) + ' KB'
+                : (bytes / 1024 / 1024).toFixed(2) + ' MB';
+        }
+
+        async function loadFiles() {
+            try {
+                const response = await fetch(`${API_BASE}/files`);
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || `HTTP ${response.status}`);
+
+                galleryError.style.display = 'none';
+                galleryCount.textContent = `${result.count} file${result.count === 1 ? '' : 's'}`;
+
+                if (result.data.length === 0) {
+                    galleryGrid.innerHTML = '<div class="gallery-empty">No files uploaded yet.</div>';
+                    return;
+                }
+
+                galleryGrid.innerHTML = result.data.map(f => `
+                    <div class="gallery-item">
+                        <img src="${escapeHtml(f.url)}" alt="${escapeHtml(f.filename)}">
+                        <div class="gallery-meta">
+                            <div class="gallery-name" title="${escapeHtml(f.filename)}">${escapeHtml(f.filename)}</div>
+                            <div class="gallery-size">${formatSize(f.size)}</div>
+                            <div class="gallery-actions">
+                                <a href="${escapeHtml(f.downloadUrl)}">Download</a>
+                                <button type="button" data-filename="${escapeHtml(f.filename)}">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                galleryError.textContent = `Error loading files: ${error.message}`;
+                galleryError.style.display = 'block';
+            }
+        }
+
+        // One listener handles every Delete button (event delegation)
+        galleryGrid.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-filename]');
+            if (!btn) return;
+
+            const filename = btn.dataset.filename;
+            if (!confirm(`Delete ${filename}?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/files/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || `HTTP ${response.status}`);
+                loadFiles();
+            } catch (error) {
+                galleryError.textContent = `Delete failed: ${error.message}`;
+                galleryError.style.display = 'block';
+            }
+        });
+
+        loadFiles();
+    </script>
+</body>
+
+</html>
